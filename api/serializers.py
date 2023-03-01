@@ -1,7 +1,17 @@
 from rest_framework import serializers
-from .models import Book
+from .models import Product, Category, Manufacturer
 
-class BookSerializer(serializers.ModelSerializer):
+class ProductSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Book
-        fields = '__all__'
+        model = Product
+        fields = ('id', 'name', 'size', 'manufacturer', 'category', 'price')
+
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ('id', 'name')
+
+class ManufacturerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Manufacturer
+        fields = ('id', 'name', 'country')

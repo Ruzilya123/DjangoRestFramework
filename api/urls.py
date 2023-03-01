@@ -1,11 +1,10 @@
+
 from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('', views.apiOverview, name="api-overview"),
-    path('book-list/', views.bookList, name="book-list"),
-    path('book-detail/<str:pk>/', views.bookDetail, name="book-detail"),
-    path('book-create/', views.bookCreate, name="book-create"),
-    path('book-update/<str:pk>/', views.bookUpdate, name="book-update"),
-    path('book-delete/<str:pk>/', views.bookDelete, name="book-delete"),
+    path('products/', views.ProductList.as_view()),
+    path('products/<int:pk>/', views.ProductDetail.as_view()),
+    path('categories/', views.CategoryList.as_view()),
+    path('categories/<int:pk>/', views.CategoryDetail.as_view()),
 ]

@@ -1,57 +1,123 @@
-from rest_framework.decorators import api_view
+# Создать API Для хранения данных о товарах. В БД 3 таблицы: Товар и Категория, Производитель. В Таблице товар следующие поля: Наименование, Размер, Производитель, Категория и Цена. В таблице Категория: Наименование. В таблице Производитель: Название фирмы, Страна производитель. Организовать CRUD с помощью класса APIView (только)
+
+from django.http import Http404
+from rest_framework.views import APIView
 from rest_framework.response import Response
-from .serializers import BookSerializer
+from rest_framework import status
+from .models import Product, Category, Manufacturer
+from .serializers import ProductSerializer, CategorySerializer, ManufacturerSerializer
 
-from .models import Book
+class ProductList(APIView):
+    def get(self, request):
+        products = Product.objects.all()
+        serializer = ProductSerializer(products, many=True)
+        return Response(serializer.data)
 
-@api_view(['GET'])
-def apiOverview(request):
-    api_urls = {
-        'Book':'/book-list/',
-        'Detail View':'/book-detail/<str:pk>/',
-        'Create':'/book-create/',
-        'Update':'/book-update/<str:pk>/',
-        'Delete':'/book-delete/<str:pk>/',
-    }
+    def post(self, request):
+        serializer = ProductSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class ProductDetail(APIView):
+    def get_object(self, pk):
+        try:
+            return Product.objects.get(pk=pk)
+        except Product.DoesNotExist:
+            raise Http404
 
-    return Response(api_urls)
+    def get(self, request, pk):
+        product = self.get_object(pk)
+        serializer = ProductSerializer(product)
+        return Response(serializer.data)
 
-@api_view(['GET'])
-def bookList(request):
-    books = Book.objects.all().order_by('-id')
-    serializer = BookSerializer(books, many=True)
-    return Response(serializer.data)
+    def put(self, request, pk):
+        product = self.get_object(pk)
+        serializer = ProductSerializer(product, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['GET'])
-def bookDetail(request, pk):
-    books = Book.objects.get(id=pk)
-    serializer = BookSerializer(books, many=False)
-    return Response(serializer.data)
+    def delete(self, request, pk):
+        product = self.get_object(pk)
+        product.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    
+class CategoryList(APIView):
+    def get(self, request):
+        categories = Category.objects.all()
+        serializer = CategorySerializer(categories, many=True)
+        return Response(serializer.data)
 
-@api_view(['POST'])
-def bookCreate(request):
-    serializer = BookSerializer(data=request.data)
+    def post(self, request):
+        serializer = CategorySerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class CategoryDetail(APIView):
+    def get_object(self, pk):
+        try:
+            return Category.objects.get(pk=pk)
+        except Category.DoesNotExist:
+            raise Http404
 
-    if serializer.is_valid():
-        serializer.save()
+    def get(self, request, pk):
+        category = self.get_object(pk)
+        serializer = CategorySerializer(category)
+        return Response(serializer.data)
 
-    return Response(serializer.data)
+    def put(self, request, pk):
+        category = self.get_object(pk)
+        serializer = CategorySerializer(category, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['POST'])
-def bookUpdate(request, pk):
-    book = Book.objects.get(id=pk)
-    serializer = BookSerializer(instance=book, data=request.data)
+    def delete(self, request, pk):
+        category = self.get_object(pk)
+        category.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    
+class ManufacturerList(APIView):
+    def get(self, request):
+        manufacturers = Manufacturer.objects.all()
+        serializer = ManufacturerSerializer(manufacturers, many=True)
+        return Response(serializer.data)
 
-    if serializer.is_valid():
-        serializer.save()
+    def post(self, request):
+        serializer = ManufacturerSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class ManufacturerDetail(APIView):
+    def get_object(self, pk):
+        try:
+            return Manufacturer.objects.get(pk=pk)
+        except Manufacturer.DoesNotExist:
+            raise Http404
 
-    return Response(serializer.data)
+    def get(self, request, pk):
+        manufacturer = self.get_object(pk)
+        serializer = ManufacturerSerializer(manufacturer)
+        return Response(serializer.data)
 
-@api_view(['DELETE'])
-def bookDelete(request, pk):
-    book = Book.objects.get(id=pk)
-    book.delete()
+    def put(self, request, pk):
+        manufacturer = self.get_object(pk)
+        serializer = ManufacturerSerializer(manufacturer, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    return Response('Книга успешно удалена!')
-
+    def delete(self, request, pk):
+        manufacturer = self.get_object(pk)
+        manufacturer.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
     
