@@ -1,57 +1,80 @@
-from rest_framework.decorators import api_view
+from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
-from .serializers import BookSerializer
+from rest_framework.views import APIView
 
-from .models import Book
+from .models import Product, Cart
+from .serializers import ProductSerializer, CartSerializer
 
-@api_view(['GET'])
-def apiOverview(request):
-    api_urls = {
-        'Book':'/book-list/',
-        'Detail View':'/book-detail/<str:pk>/',
-        'Create':'/book-create/',
-        'Update':'/book-update/<str:pk>/',
-        'Delete':'/book-delete/<str:pk>/',
-    }
+class ProductView(APIView):
+    def get(self, request):
+        products = Product.objects.all()
+        serializer = ProductSerializer(products, many=True)
+        return Response({"products": serializer.data})
+    
+    def post(self, request):
+        product = request.data.get('products')
 
-    return Response(api_urls)
+        serializer = ProductSerializer(data=product)
+        if serializer.is_valid(raise_exception=True):
+            product_saved = serializer.save()
 
-@api_view(['GET'])
-def bookList(request):
-    books = Book.objects.all().order_by('-id')
-    serializer = BookSerializer(books, many=True)
-    return Response(serializer.data)
+        return Response({
+            "success": "Product '{}' created successfull".format(product_saved.title)
+        })
+    
+    def put(self, request, pk):
+        saved_product = get_object_or_404(Product.objects.all(), pk=pk)
+        data = request.data.get('products')
 
-@api_view(['GET'])
-def bookDetail(request, pk):
-    books = Book.objects.get(id=pk)
-    serializer = BookSerializer(books, many=False)
-    return Response(serializer.data)
+        serializer = ProductSerializer(instance=saved_product, data=data, partial=True)
+        if serializer.is_valid(raise_exception=True):
+            product_saved = serializer.save()
 
-@api_view(['POST'])
-def bookCreate(request):
-    serializer = BookSerializer(data=request.data)
+        return Response({
+            "success": "Product '{}' update successfull".format(product_saved.title)
+        })
+    
+    def delete(self, request, pk):
+        product = get_object_or_404(Product.objects.all(), pk=pk)
+        product.delete
+        return Response({
+            "message": "Product with id '{}' has been deleted".format(pk)
+        }, status=204)
+    
 
-    if serializer.is_valid():
-        serializer.save()
+class CartView(APIView):
+    def get(self, request):
+        carts = Cart.objects.all()
+        serializer = CartSerializer(carts, many=True)
+        return Response({"carts": serializer.data})
+    
+    def post(self, request):
+        cart = request.data.get('carts')
 
-    return Response(serializer.data)
+        serializer = CartSerializer(data=cart)
+        if serializer.is_valid(raise_exception=True):
+            cart_saved = serializer.save()
 
-@api_view(['POST'])
-def bookUpdate(request, pk):
-    book = Book.objects.get(id=pk)
-    serializer = BookSerializer(instance=book, data=request.data)
+        return Response({
+            "success": "Cart '{}' created successfull".format(cart_saved.title)
+        })
+    
+    def put(self, request, pk):
+        saved_cart = get_object_or_404(Cart.objects.all(), pk=pk)
+        data = request.data.get('carts')
 
-    if serializer.is_valid():
-        serializer.save()
+        serializer = CartSerializer(instance=saved_cart, data=data, partial=True)
+        if serializer.is_valid(raise_exception=True):
+            cart_saved = serializer.save()
 
-    return Response(serializer.data)
-
-@api_view(['DELETE'])
-def bookDelete(request, pk):
-    book = Book.objects.get(id=pk)
-    book.delete()
-
-    return Response('Книга успешно удалена!')
-
+        return Response({
+            "success": "Cart '{}' update successfull".format(cart_saved.title)
+        })
+    
+    def delete(self, request, pk):
+        cart = get_object_or_404(Cart.objects.all(), pk=pk)
+        cart.delete
+        return Response({
+            "message": "Cart with id '{}' has been deleted".format(pk)
+        }, status=204)
     

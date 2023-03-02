@@ -1,11 +1,9 @@
 from django.urls import path
-from . import views
+from .views import ProductView, CartView
 
 urlpatterns = [
-    path('', views.apiOverview, name="api-overview"),
-    path('book-list/', views.bookList, name="book-list"),
-    path('book-detail/<str:pk>/', views.bookDetail, name="book-detail"),
-    path('book-create/', views.bookCreate, name="book-create"),
-    path('book-update/<str:pk>/', views.bookUpdate, name="book-update"),
-    path('book-delete/<str:pk>/', views.bookDelete, name="book-delete"),
+    path('products/', ProductView.as_view(), name='products'),
+    path('product/<int:pk>', ProductView.as_view(), name='product'),
+    path('cart/', CartView.as_view(), name='carts'),
+    path('cart/<int:pk>', CartView.as_view(), name='cart'),
 ]

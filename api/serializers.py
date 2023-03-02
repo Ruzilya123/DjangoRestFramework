@@ -1,7 +1,21 @@
 from rest_framework import serializers
-from .models import Book
+from .models import Product, Cart
 
-class BookSerializer(serializers.ModelSerializer):
+class ProductSerializer(serializers.ModelSerializer):    
     class Meta:
-        model = Book
-        fields = '__all__'
+        model = Product
+        fields = ('id', 'title', 'description', 'price')
+
+class CartSerializer(serializers.ModelSerializer):    
+    class Meta:
+        model = Cart
+        fields = ('id', 'products')
+    
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['total_price'] = instance.total_price()
+        return data
+
+
+
+
