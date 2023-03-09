@@ -1,9 +1,15 @@
-from django.urls import path
-from .views import ProductView, CartView
+from django.urls import path, include
+from . import views
+from rest_framework import routers
+
+router = routers.SimpleRouter()
+router.register(r'orders', views.OrderList, basename='orders')
+router.register(r'orderstatus', views.OrderStatusList, basename='orderstatus')
+router.register(r'pets', views.PetsList, basename='pets')
+router.register(r'category', views.CategoryList, basename='category')
+router.register(r'pettype',views. PetTypeList, basename='pettype')
+router.register(r'petstatus', views.PetStatusList, basename='petstatus')
 
 urlpatterns = [
-    path('products/', ProductView.as_view(), name='products'),
-    path('product/<int:pk>', ProductView.as_view(), name='product'),
-    path('cart/', CartView.as_view(), name='carts'),
-    path('cart/<int:pk>', CartView.as_view(), name='cart'),
+    path('', include(router.urls)),
 ]

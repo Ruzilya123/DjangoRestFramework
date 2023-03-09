@@ -1,21 +1,34 @@
 from rest_framework import serializers
-from .models import Product, Cart
+from .models import Order, OrderStatus, Pets, Category, PetType, PetStatus
 
-class ProductSerializer(serializers.ModelSerializer):    
+class OrderSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Product
-        fields = ('id', 'title', 'description', 'price')
+        model = Order
+        fields = '__all__'
 
-class CartSerializer(serializers.ModelSerializer):    
+class OrderStatusSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Cart
-        fields = ('id', 'products')
-    
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        data['total_price'] = instance.total_price()
-        return data
+        model = OrderStatus
+        fields = '__all__'
 
+class PetsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Pets
+        fields = '__all__'
 
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = '__all__'
 
+class PetTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PetType
+        fields = '__all__'
+
+class PetStatusSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PetStatus
+        fields = '__all__'
+        
 

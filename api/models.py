@@ -1,19 +1,45 @@
 from django.db import models
 
-
-class Product(models.Model):
-    title = models.CharField(max_length=100)
-    description = models.TextField()
-    price = models.IntegerField()
-
-    def __str__(self):
-        return self.title
-    
-class Cart(models.Model):
-    products = models.ManyToManyField(Product)
+class Order(models.Model):
+    pet = models.ForeignKey('Pets', on_delete=models.CASCADE, null=True)
+    quantity = models.IntegerField()
+    shipDate = models.DateTimeField()
+    complete = models.BooleanField()
+    status = models.ForeignKey('OrderStatus', on_delete=models.CASCADE, null=True)
 
     def __str__(self):
-        return str(self.products)
+        return self.pet.name
+
+class OrderStatus(models.Model):
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+
+class Pets(models.Model):
+    category = models.ForeignKey('Category', on_delete=models.CASCADE)
+    name = models.CharField(max_length=255)
+    photoUrls = models.CharField(max_length=255)
+    pet_type = models.ForeignKey('PetType', on_delete=models.CASCADE)
+    status = models.ForeignKey('PetStatus', on_delete=models.CASCADE, null=True)
+
+    def __str__(self):
+        return self.name
     
-    def total_price(self):
-        return sum(item.price for item in self.products.all())
+class Category(models.Model):
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+
+class PetType(models.Model):
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+    
+class PetStatus(models.Model):
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
