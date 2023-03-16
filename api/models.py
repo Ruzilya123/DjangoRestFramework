@@ -36,12 +36,7 @@ class Workers(models.Model):
         db_table = 'workers'
 
 class Position(models.Model):
-    POSITIONS = (
-        ('Официант', 'Официант'),
-        ('Повар', 'Повар'),
-        ('Администратор', 'Администратор'),
-    )
-    position = models.CharField(max_length=100, choices=POSITIONS, default='waiter')
+    position = models.CharField(max_length=100)
 
     def __str__(self):
         return self.position
