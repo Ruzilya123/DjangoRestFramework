@@ -1,6 +1,6 @@
 from django.contrib import admin
-from .models import Product, Category, Manufacturer
+from .models import Order, Workers, Position
 
-admin.site.register(Product)
-admin.site.register(Category)
-admin.site.register(Manufacturer)
+admin.site.register(Order)
+admin.site.register(Workers)
+admin.site.register(Position)

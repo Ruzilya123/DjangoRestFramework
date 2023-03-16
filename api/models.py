@@ -1,37 +1,50 @@
 from django.db import models
 
-class Product(models.Model):
-    name = models.CharField(verbose_name="Наименование", max_length=200)
-    size = models.CharField(verbose_name="Размер", max_length=200)
-    manufacturer = models.ForeignKey('Manufacturer', verbose_name="Производитель", on_delete=models.CASCADE)
-    category = models.ForeignKey('Category', verbose_name="Категория", on_delete=models.CASCADE)
-    price = models.IntegerField(verbose_name="Цена")
+class Order(models.Model):
+    table = models.CharField(max_length=100)
+    worker = models.ManyToManyField('Workers')
+    order_start_time = models.DateTimeField(auto_now_add=True)
+    STATUSES = (
+        ('new', 'Добавлен'),
+        ('in_progress', 'Готовится'),
+        ('ready', 'Готов'),
+        ('served', 'Оплачен'),
+        ('canceled', 'Отменен'),
+    )
+    status = models.CharField(max_length=100, choices=STATUSES, default='new')
+    price = models.IntegerField()
+
+    def __str__(self):
+        return self.table
+    
+    class Meta:
+        db_table = 'order'
+
+class Workers(models.Model):
+    name = models.CharField(max_length=100)
+    surname = models.CharField(max_length=100)
+    middle_name = models.CharField(max_length=100)
+    login = models.CharField(max_length=100)
+    password = models.CharField(max_length=100)
+    photo = models.ImageField(upload_to='images/')
+    position = models.ManyToManyField('Position')
 
     def __str__(self):
         return self.name
     
     class Meta:
-        verbose_name = "Продукт"
-        verbose_name_plural = "Продукты"
+        db_table = 'workers'
 
-
-class Category(models.Model):
-    name = models.CharField(verbose_name="Наименование", max_length=200)
-
-    def __str__(self):
-        return self.name
-    
-    class Meta:
-        verbose_name = "Категория"
-        verbose_name_plural = "Категории"
-    
-class Manufacturer(models.Model):
-    name = models.CharField(verbose_name="Название фирмы", max_length=200)
-    country = models.CharField(verbose_name="Страна производитель", max_length=200)
+class Position(models.Model):
+    POSITIONS = (
+        ('Официант', 'Официант'),
+        ('Повар', 'Повар'),
+        ('Администратор', 'Администратор'),
+    )
+    position = models.CharField(max_length=100, choices=POSITIONS, default='waiter')
 
     def __str__(self):
-        return self.name
+        return self.position
     
     class Meta:
-        verbose_name = "Производитель"
-        verbose_name_plural = "Производители"
+        db_table = 'position'
