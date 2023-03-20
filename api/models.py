@@ -19,7 +19,7 @@ class OrderStatus(models.Model):
 class Pets(models.Model):
     category = models.ForeignKey('Category', on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
-    photoUrls = models.CharField(max_length=255)
+    photoUrls = models.URLField()
     pet_type = models.ForeignKey('PetType', on_delete=models.CASCADE)
     status = models.ForeignKey('PetStatus', on_delete=models.CASCADE, null=True)
 
