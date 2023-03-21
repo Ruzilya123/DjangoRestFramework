@@ -1,10 +1,11 @@
-
-from django.urls import path
+from django.urls import include, path
 from . import views
 
 urlpatterns = [
-    path('products/', views.ProductList.as_view()),
-    path('products/<int:pk>/', views.ProductDetail.as_view()),
-    path('categories/', views.CategoryList.as_view()),
-    path('categories/<int:pk>/', views.CategoryDetail.as_view()),
+    path('students/', views.StudentAPIList.as_view()),
+    path('students/<int:pk>/', views.StudentAPIDetail.as_view()),
+    path('classes/', views.ClassAPIList.as_view()),
+    path('classes/<int:pk>/', views.ClassAPIDetail.as_view()),
+    path('subjects/', views.SubjectAPIList.as_view()),
+    path('subjects/<int:pk>/', views.SubjectAPIDetail.as_view()),
 ]

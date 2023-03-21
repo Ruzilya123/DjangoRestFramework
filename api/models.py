@@ -1,37 +1,21 @@
 from django.db import models
+from django.contrib.auth.models import User
 
-class Product(models.Model):
-    name = models.CharField(verbose_name="Наименование", max_length=200)
-    size = models.CharField(verbose_name="Размер", max_length=200)
-    manufacturer = models.ForeignKey('Manufacturer', verbose_name="Производитель", on_delete=models.CASCADE)
-    category = models.ForeignKey('Category', verbose_name="Категория", on_delete=models.CASCADE)
-    price = models.IntegerField(verbose_name="Цена")
-
-    def __str__(self):
-        return self.name
+class Class(models.Model):
+    class_name = models.CharField(max_length=100)
+    year = models.CharField(max_length=100)
+    students = models.ManyToManyField('Student', related_name='students')
     
-    class Meta:
-        verbose_name = "Продукт"
-        verbose_name_plural = "Продукты"
-
-
-class Category(models.Model):
-    name = models.CharField(verbose_name="Наименование", max_length=200)
-
-    def __str__(self):
-        return self.name
+class Student(models.Model):
+    fio = models.CharField(max_length=100)
+    age = models.IntegerField()
+    subjects = models.ManyToManyField('Subject', related_name='subjects')
+    marks = models.CharField(max_length=100, blank=True, choices=(
+        ('2', '2'),
+        ('3', '3'),
+        ('4', '4'),
+        ('5', '5'),
+    ))
     
-    class Meta:
-        verbose_name = "Категория"
-        verbose_name_plural = "Категории"
-    
-class Manufacturer(models.Model):
-    name = models.CharField(verbose_name="Название фирмы", max_length=200)
-    country = models.CharField(verbose_name="Страна производитель", max_length=200)
-
-    def __str__(self):
-        return self.name
-    
-    class Meta:
-        verbose_name = "Производитель"
-        verbose_name_plural = "Производители"
+class Subject(models.Model):
+    subject_name = models.CharField(max_length=100)
