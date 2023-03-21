@@ -1,35 +1,59 @@
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
-from rest_framework.permissions import  IsAdminUser, IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
+from djoser.conf import User
+from rest_framework.response import Response
+from rest_framework import status
 
-from .models import Student, Class, Subject
-from .serializers import StudentSerializer, ClassSerializer, SubjectSerializer
+from .permissions import isAdminOrReadOnly
+from .serializers import *
+from .models import *
 
-class StudentAPIList(ListCreateAPIView):
-    queryset = Student.objects.all()
-    serializer_class = StudentSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly,)
+class ProductList(ListCreateAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    permission_classes = [isAdminOrReadOnly]
+    authentication_classes = [TokenAuthentication]
 
-class StudentAPIDetail(RetrieveUpdateDestroyAPIView):
-    queryset = Student.objects.all()
-    serializer_class = StudentSerializer
-    permission_classes = (IsAdminUser,)
+class ProductDetail(RetrieveUpdateDestroyAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    permission_classes = [isAdminOrReadOnly]
+    authentication_classes = [TokenAuthentication]
 
-class ClassAPIList(ListCreateAPIView):
-    queryset = Class.objects.all()
-    serializer_class = ClassSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly,)
+class OrderList(ListCreateAPIView):
+    queryset = Order.objects.all()
+    serializer_class = OrderSerializer
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
 
-class ClassAPIDetail(RetrieveUpdateDestroyAPIView):
-    queryset = Class.objects.all()
-    serializer_class = ClassSerializer
-    permission_classes = (IsAdminUser,)
+class OrderDetail(RetrieveUpdateDestroyAPIView):
+    queryset = Order.objects.all()
+    serializer_class = OrderSerializer
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
 
-class SubjectAPIList(ListCreateAPIView):
-    queryset = Subject.objects.all()
-    serializer_class = SubjectSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly,)
+class CartList(ListCreateAPIView):
+    queryset = Cart.objects.all()
+    serializer_class = CartSerializer
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
 
-class SubjectAPIDetail(RetrieveUpdateDestroyAPIView):
-    queryset = Subject.objects.all()
-    serializer_class = SubjectSerializer
-    permission_classes = (IsAdminUser,)
+class CartDetail(RetrieveUpdateDestroyAPIView):
+    queryset = Cart.objects.all()
+    serializer_class = CartSerializer
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
+
+class SignUp(ListCreateAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [isAdminOrReadOnly]
+    authentication_classes = [TokenAuthentication]
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)

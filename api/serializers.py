@@ -1,17 +1,25 @@
 from rest_framework import serializers
-from .models import Student, Class, Subject
+from .models import *
+from django.contrib.auth.models import User
 
-class StudentSerializer(serializers.ModelSerializer):
+class ProductSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Student
-        fields = '__all__'
+        model = Product
+        fields = ('id', 'name', 'description', 'price')
 
-class ClassSerializer(serializers.ModelSerializer):
+class OrderSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Class
-        fields = '__all__'
+        model = Order
+        fields = ('id', 'user', 'products', 'total_price')
 
-class SubjectSerializer(serializers.ModelSerializer):
+class CartSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Subject
-        fields = '__all__'
+        model = Cart
+        fields = ('id', 'user', 'products')
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('id', 'username', 'email', 'password')
+
+__all__ = ['ProductSerializer', 'OrderSerializer', 'CartSerializer', 'UserSerializer']
