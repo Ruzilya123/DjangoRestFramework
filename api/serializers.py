@@ -1,17 +1,12 @@
 from rest_framework import serializers
-from .models import Student, Class, Subject
+from .models import Book, OrderedBook
 
-class StudentSerializer(serializers.ModelSerializer):
+class BookSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Student
+        model = Book
         fields = '__all__'
 
-class ClassSerializer(serializers.ModelSerializer):
+class OrderedBookSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Class
-        fields = '__all__'
-
-class SubjectSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Subject
+        model = OrderedBook
         fields = '__all__'
