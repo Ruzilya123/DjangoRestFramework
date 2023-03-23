@@ -1,10 +1,7 @@
 from django.contrib import admin
-from django.urls import path, include, re_path
+from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/auth/', include('rest_framework.urls')),
-    path('api/', include('api.urls')),
-    path('api/auth2/', include('djoser.urls')),
-    re_path(r'^auth2/', include('djoser.urls.authtoken')),
+    path('13/', include('api.urls')),
 ]

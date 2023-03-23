@@ -1,17 +1,32 @@
 from rest_framework import serializers
-from .models import Student, Class, Subject
+from .models import Group, Staff, Product, Shift, Order, UserModel
 
-class StudentSerializer(serializers.ModelSerializer):
+class GroupSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Student
-        fields = '__all__'
+        model = Group
+        fields = ('id', 'name')
 
-class ClassSerializer(serializers.ModelSerializer):
+class StaffSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Class
-        fields = '__all__'
+        model = Staff
+        fields = ('id', 'name', 'login', 'status', 'group')
+    
+class ProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = ('id', 'name', 'price')
 
-class SubjectSerializer(serializers.ModelSerializer):
+class ShiftSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Subject
-        fields = '__all__'
+        model = Shift
+        fields = ('id', 'start', 'end', 'product', 'group', 'staff')
+
+class OrderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Order
+        fields = ('id', 'table', 'staff', 'time', 'status', 'position', 'price')
+
+class UserModelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserModel
+        fields = ('id', 'name', 'login', 'password', 'group')

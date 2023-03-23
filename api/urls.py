@@ -1,11 +1,19 @@
-from django.urls import include, path
+from django.urls import include, path, re_path
 from . import views
 
 urlpatterns = [
-    path('students/', views.StudentAPIList.as_view()),
-    path('students/<int:pk>/', views.StudentAPIDetail.as_view()),
-    path('classes/', views.ClassAPIList.as_view()),
-    path('classes/<int:pk>/', views.ClassAPIDetail.as_view()),
-    path('subjects/', views.SubjectAPIList.as_view()),
-    path('subjects/<int:pk>/', views.SubjectAPIDetail.as_view()),
+    path('group_list/', views.group_list),
+    path('group_list_detail/<int:pk>/', views.group_list_detail),
+    path('staff_list/', views.staff_list),
+    path('staff_list_detail/<int:pk>/', views.staff_list_detail),
+    path('product_list/', views.product_list),
+    path('product_detail/<int:pk>/', views.product_detail),
+    path('shift_list/', views.shift_list),
+    path('shift_list_detail/<int:pk>/', views.shift_list_detail),
+    path('order_list/', views.order_list),
+    path('order_list_detail/<int:pk>/', views.order_list_detail),
+    path('order_delete/<int:pk>/', views.order_delete),
+    path('users_list/', views.users_list),
+    path('users_list_detail/<int:pk>/', views.users_list_detail),
+    re_path(r'^auth2/', include('djoser.urls.authtoken')),
 ]
