@@ -1,4 +1,4 @@
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, RetrieveUpdateAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, RetrieveUpdateAPIView, ListAPIView
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from djoser.conf import User
@@ -27,11 +27,24 @@ class OrderList(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [TokenAuthentication]
 
-class CartList(ListCreateAPIView):
-    queryset = Cart.objects.all()
-    serializer_class = CartSerializer
+class CartList(ListAPIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [TokenAuthentication]
+
+    def get(self, request, format=None):
+        user = request.user
+        cart = Cart.objects.get(user=user)
+        serializer = CartSerializer(cart)
+        return Response(serializer.data)
+
+    def post(self, request, format=None):
+        user = request.user
+        cart = Cart.objects.get(user=user)
+        product = Product.objects.get(pk=request.data['product'])
+        cart.products.add(product)
+        cart.save()
+        serializer = CartSerializer(cart)
+        return Response(serializer.data)
 
 class CartDetail(RetrieveUpdateAPIView):
     queryset = Cart.objects.all()
