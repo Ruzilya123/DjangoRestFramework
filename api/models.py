@@ -41,30 +41,51 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 class Country(models.Model):
     name = models.CharField(max_length=255)
+    language = models.CharField(max_length=255)
+    def __str__(self):
+        return self.name
+    
+class Excursion(models.Model):
+    name = models.CharField(max_length=255)
+    place = models.CharField(max_length=255)
+    time = models.CharField(max_length=255)
+    cost = models.IntegerField()
     def __str__(self):
         return self.name
 
-class Manufacturer(models.Model):
+class Tour(models.Model):
     name = models.CharField(max_length=255)
-    def __str__(self):
-        return self.name
-
-class Product(models.Model):
-    name = models.CharField(max_length=255)
-    manufacturer = models.ManyToManyField(Manufacturer)
     country = models.ManyToManyField(Country)
-    is_new = models.BooleanField(default=False)
-    price = models.DecimalField(max_digits=10, decimal_places=2)
+    time = models.CharField(max_length=255, choices=(
+        ('1 week', '1 week'),
+        ('2 weeks', '2 weeks'),
+        ('3 weeks', '3 weeks'),
+    ))
+    service = models.CharField(max_length=255, choices=(
+        ('all inclusive', 'all inclusive'),
+        ('none', 'none'),
+    ))
+    count = models.IntegerField()
+    hotel = models.CharField(max_length=255, choices=(
+        ('3 stars', '3 stars'),
+        ('4 stars', '4 stars'),
+        ('5 stars', '5 stars'),
+    ))
+    excursion = models.ManyToManyField(Excursion)
+    cost = models.IntegerField()
     def __str__(self):
         return self.name
+
+class PersonalCabinet(models.Model):
+    tour = models.ManyToManyField(Tour)
+    cost = models.IntegerField()
+    time = models.CharField(max_length=255)
+    def __str__(self):
+        return self.tour.name
 
 class Cart(models.Model):
-    product = models.ManyToManyField(Product)
+    user = models.ManyToManyField(User)
+    tour = models.ManyToManyField(Tour)
     def __str__(self):
-        return self.user
+        return self.tour.name
 
-class Order(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    product = models.ManyToManyField(Product)
-    def __str__(self):
-        return self.user

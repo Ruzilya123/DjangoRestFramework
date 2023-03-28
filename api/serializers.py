@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate
-from .models import Order, User, Country, Manufacturer, Product, Cart
+from .models import User, Country, Cart, Tour, Excursion, PersonalCabinet
 
 class UserRegistrSerializer(serializers.Serializer):
     password2 = serializers.CharField()
@@ -37,30 +37,32 @@ class UserLoginSerializer(serializers.Serializer):
             return user
         raise serializers.ValidationError("Неверный логин или пароль")
 
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('id', 'email', 'username', 'password')
+
 class CountrySerializer(serializers.ModelSerializer):
     class Meta:
         model = Country
-        fields = ('id', 'name')
+        fields = ('id', 'name', 'language')
 
-class ManufacturerSerializer(serializers.ModelSerializer):
+class ExcursionSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Manufacturer
-        fields = ('id', 'name')
+        model = Excursion
+        fields = ('id', 'name', 'place', 'time', 'cost')
 
-class ProductSerializer(serializers.ModelSerializer):
-    manufacturer = ManufacturerSerializer(many=True)
-    country = CountrySerializer(many=True)
+class TourSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Product
-        fields = ('id', 'name', 'manufacturer', 'country', 'is_new', 'price')
+        model = Tour
+        fields = ('id', 'name', 'country', 'time', 'service', 'count', 'hotel', 'excursion', 'cost')
+
+class PersonalCabinetSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PersonalCabinet
+        fields = ('id', 'tour', 'cost', 'time')
 
 class CartSerializer(serializers.ModelSerializer):
-    product = ProductSerializer(many=True)
     class Meta:
         model = Cart
-        fields = ('id', 'product', 'user')
-
-class OrderSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Order
-        fields = ('id', 'user', 'product')
+        fields = ('id', 'user', 'tour')

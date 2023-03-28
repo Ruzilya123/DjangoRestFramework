@@ -1,9 +1,10 @@
 from django.contrib import admin
-from .models import User, Country, Manufacturer, Product, Cart, Order
+from .models import User, Country, Cart, Tour, Excursion, PersonalCabinet
 
 admin.site.register(User)
 admin.site.register(Country)
-admin.site.register(Manufacturer)
-admin.site.register(Product)
 admin.site.register(Cart)
-admin.site.register(Order)
+admin.site.register(Tour)
+admin.site.register(Excursion)
+admin.site.register(PersonalCabinet)
+

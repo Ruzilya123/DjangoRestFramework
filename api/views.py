@@ -7,9 +7,10 @@ from rest_framework import generics
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from .permissions import IsClient, IsGuest, IsAdmin
 from rest_framework.authtoken.models import Token
-from .models import User, Country, Manufacturer, Product, Cart
-from .serializers import UserRegistrSerializer, UserLoginSerializer, CountrySerializer, ManufacturerSerializer, ProductSerializer, CartSerializer
+from .models import User, Country, Cart, Tour, Excursion, PersonalCabinet
+from .serializers import UserRegistrSerializer, UserSerializer, UserLoginSerializer, CountrySerializer, ExcursionSerializer, TourSerializer, CartSerializer, PersonalCabinetSerializer
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.views import APIView
 
@@ -79,50 +80,61 @@ class LogOutUserView(generics.ListAPIView):
             }
         }, status=200)
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated, IsAdminUser])
+def get_employee(request):
+    user = request.user
+    serializer = UserSerializer(user, many=True)
+    return Response({"employees": serializer.data}, status=status.HTTP_200_OK)
+
 class CountryViewSet(viewsets.ModelViewSet):
     queryset = Country.objects.all()
     serializer_class = CountrySerializer
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAdmin]
 
-class ManufacturerViewSet(viewsets.ModelViewSet):
-    queryset = Manufacturer.objects.all()
-    serializer_class = ManufacturerSerializer
-    permission_classes = [IsAdminUser]
-
-@api_view(['GET'])
-def product_list(request):
-    products = Product.objects.all()
-    serializer = ProductSerializer(products, many=True)
-    return Response(serializer.data)
-
-@api_view(['POST', 'PUT', 'DELETE'])
-@permission_classes([IsAdminUser])
-def product_detail(request, pk):
-    try:
-        product = Product.objects.get(pk=pk)
-    except Product.DoesNotExist as e:
-        return Response({'error': str(e)})
-
-    if request.method == 'GET':
-        serializer = ProductSerializer(product)
-        return Response(serializer.data)
-    elif request.method == 'PUT':
-        serializer = ProductSerializer(instance=product, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors)
-    elif request.method == 'DELETE':
-        product.delete()
-        return Response({'deleted': True})
+class TourViewSet(viewsets.ModelViewSet):
+    queryset = Tour.objects.all()
+    serializer_class = TourSerializer
+    
+    def get_permissions(self):
+        if self.action in ['update', 'destroy']:
+            permission_classes = [permissions.IsAuthenticated, IsAdmin]
+        else:
+            permission_classes = [permissions.IsAuthenticated, IsClient, IsGuest]
+        return [permission() for permission in permission_classes]
+    
+class ExcursionViewSet(viewsets.ModelViewSet):
+    queryset = Excursion.objects.all()
+    serializer_class = ExcursionSerializer
+    
+    def get_permissions(self):
+        if self.action in ['update', 'destroy']:
+            permission_classes = [permissions.IsAuthenticated, IsAdmin]
+        else:
+            permission_classes = [permissions.AllowAny]
+        return [permission() for permission in permission_classes]
 
 class CartViewSet(viewsets.ModelViewSet):
     queryset = Cart.objects.all()
     serializer_class = CartSerializer
-    permission_classes = [IsAuthenticated]
+    
+    def get_permissions(self):
+        if self.action in ['update', 'destroy']:
+            permission_classes = [permissions.IsAuthenticated, IsAdmin]
+        else:
+            permission_classes = [permissions.IsAuthenticated, IsClient]
+        return [permission() for permission in permission_classes]
 
-class OrderViewSet(viewsets.ModelViewSet):
-    queryset = Cart.objects.all()
-    serializer_class = CartSerializer
-    permission_classes = [IsAuthenticated]
+class PersonalCabinetViewSet(viewsets.ModelViewSet):
+    queryset = PersonalCabinet.objects.all()
+    serializer_class = PersonalCabinetSerializer
+    
+    def get_permissions(self):
+        if self.action in ['destroy']:
+            permission_classes = [permissions.IsAuthenticated, IsAdmin]
+        elif self.action in ['update']:
+            permission_classes = [permissions.IsAuthenticated, IsClient, IsAdmin]
+        else:
+            permission_classes = [permissions.IsAuthenticated, IsClient]
+        return [permission() for permission in permission_classes]
 
