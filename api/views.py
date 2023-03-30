@@ -6,12 +6,10 @@ from rest_framework import permissions
 from rest_framework import generics
 from rest_framework import status
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from .permissions import IsClient, IsGuest, IsAdmin
 from rest_framework.authtoken.models import Token
-from .models import User, Country, Cart, Tour, Excursion, PersonalCabinet
-from .serializers import UserRegistrSerializer, UserSerializer, UserLoginSerializer, CountrySerializer, ExcursionSerializer, TourSerializer, CartSerializer, PersonalCabinetSerializer
-from rest_framework.decorators import api_view, permission_classes
+from .models import User, Comment, Category, Actor, Genre, Film 
+from .serializers import UserRegistrSerializer, UserSerializer, UserLoginSerializer, CategorySerializer, ActorSerializer, GenreSerializer, FilmSerializer, CommentSerializer
 from rest_framework.views import APIView
 
 class RegistrUserView(generics.CreateAPIView):
@@ -28,14 +26,10 @@ class RegistrUserView(generics.CreateAPIView):
             user = serializer.user
             token = Token.objects.get(user=user).key
             print(Token)
-            return Response({'user_token': token.key}, status=status.HTTP_200_OK)
+            return Response({'token': token.key}, status=status.HTTP_200_OK)
         else:
             data = serializer.errors
             return Response(data)
-
-def hello(request):
-    return JsonResponse({'data': {'message': 'Hello world!'}})
-
 
 class LoginUserView(APIView):
     def post(self, request, *args, **kwargs):
@@ -43,7 +37,7 @@ class LoginUserView(APIView):
         if not serializer.is_valid():
             return JsonResponse({'error': {
                 'code': 400,
-                'message': 'Authentification failed'
+                'non_field_errors': 'Unable to log in with provided credentials'
             }}, status=400)
         user = serializer.validated_data
         if user:
@@ -51,8 +45,8 @@ class LoginUserView(APIView):
             token = token_object if token_object else token_created
             return Response({'user_token': token.key}, status=status.HTTP_200_OK)
         return Response({
-            'error': {
-                'message': 'Authentification failed'
+            'non_field_errors': {
+                'message': 'Unable to log in with provided credentials'
             }
         })
     def get(self, request, *args, **kwargs):
@@ -80,61 +74,33 @@ class LogOutUserView(generics.ListAPIView):
             }
         }, status=200)
 
-@api_view(['GET'])
-@permission_classes([IsAuthenticated, IsAdminUser])
-def get_employee(request):
-    user = request.user
-    serializer = UserSerializer(user, many=True)
-    return Response({"employees": serializer.data}, status=status.HTTP_200_OK)
+class CommentsViewSet(viewsets.ModelViewSet):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+    permission_classes = [permissions.IsAuthenticated, IsClient]
 
-class CountryViewSet(viewsets.ModelViewSet):
-    queryset = Country.objects.all()
-    serializer_class = CountrySerializer
-    permission_classes = [IsAdmin]
+class FilmViewSet(viewsets.ModelViewSet):
+    queryset = Film.objects.all()
+    serializer_class = FilmSerializer
 
-class TourViewSet(viewsets.ModelViewSet):
-    queryset = Tour.objects.all()
-    serializer_class = TourSerializer
-    
     def get_permissions(self):
         if self.action in ['update', 'destroy']:
             permission_classes = [permissions.IsAuthenticated, IsAdmin]
         else:
             permission_classes = [permissions.IsAuthenticated, IsClient, IsGuest]
         return [permission() for permission in permission_classes]
-    
-class ExcursionViewSet(viewsets.ModelViewSet):
-    queryset = Excursion.objects.all()
-    serializer_class = ExcursionSerializer
-    
-    def get_permissions(self):
-        if self.action in ['update', 'destroy']:
-            permission_classes = [permissions.IsAuthenticated, IsAdmin]
-        else:
-            permission_classes = [permissions.AllowAny]
-        return [permission() for permission in permission_classes]
 
-class CartViewSet(viewsets.ModelViewSet):
-    queryset = Cart.objects.all()
-    serializer_class = CartSerializer
-    
-    def get_permissions(self):
-        if self.action in ['update', 'destroy']:
-            permission_classes = [permissions.IsAuthenticated, IsAdmin]
-        else:
-            permission_classes = [permissions.IsAuthenticated, IsClient]
-        return [permission() for permission in permission_classes]
+class ActorViewSet(viewsets.ModelViewSet):
+    queryset = Actor.objects.all()
+    serializer_class = ActorSerializer
+    permission_classes = [IsAdmin]
 
-class PersonalCabinetViewSet(viewsets.ModelViewSet):
-    queryset = PersonalCabinet.objects.all()
-    serializer_class = PersonalCabinetSerializer
-    
-    def get_permissions(self):
-        if self.action in ['destroy']:
-            permission_classes = [permissions.IsAuthenticated, IsAdmin]
-        elif self.action in ['update']:
-            permission_classes = [permissions.IsAuthenticated, IsClient, IsAdmin]
-        else:
-            permission_classes = [permissions.IsAuthenticated, IsClient]
-        return [permission() for permission in permission_classes]
+class GenreViewSet(viewsets.ModelViewSet):
+    queryset = Genre.objects.all()
+    serializer_class = GenreSerializer
+    permission_classes = [IsAdmin]
 
+class CategoryViewSet(viewsets.ModelViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    permission_classes = [IsAdmin]

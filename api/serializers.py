@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate
-from .models import User, Country, Cart, Tour, Excursion, PersonalCabinet
+from .models import User, Category, Actor, Genre, Film, Comment
 
 class UserRegistrSerializer(serializers.Serializer):
     password2 = serializers.CharField()
@@ -35,34 +35,35 @@ class UserLoginSerializer(serializers.Serializer):
         user = authenticate(**data)
         if user:
             return user
-        raise serializers.ValidationError("Неверный логин или пароль")
+        raise serializers.ValidationError("Unable to log in with provided credentials")
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('id', 'email', 'username', 'password')
+        fields = ('id', 'username', 'password')
 
-class CountrySerializer(serializers.ModelSerializer):
+class CategorySerializer(serializers.ModelSerializer):
     class Meta:
-        model = Country
-        fields = ('id', 'name', 'language')
+        model = Category
+        fields = ('id', 'name', 'description')
 
-class ExcursionSerializer(serializers.ModelSerializer):
+class ActorSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Excursion
-        fields = ('id', 'name', 'place', 'time', 'cost')
+        model = Actor
+        fields = ('id', 'name', 'age', 'description', 'photo')
 
-class TourSerializer(serializers.ModelSerializer):
+class GenreSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Tour
-        fields = ('id', 'name', 'country', 'time', 'service', 'count', 'hotel', 'excursion', 'cost')
+        model = Genre
+        fields = ('id', 'name', 'description')
 
-class PersonalCabinetSerializer(serializers.ModelSerializer):
+class FilmSerializer(serializers.ModelSerializer):
     class Meta:
-        model = PersonalCabinet
-        fields = ('id', 'tour', 'cost', 'time')
+        model = Film
+        fields = ('id', 'name', 'description', 'poster', 'date_out', 'country', 'actor', 'genre', 'category')
 
-class CartSerializer(serializers.ModelSerializer):
+class CommentSerializer(serializers.Serializer):
     class Meta:
-        model = Cart
-        fields = ('id', 'user', 'tour')
+        model = Comment
+        fields = ('id', 'user', 'movie', 'text')
+
