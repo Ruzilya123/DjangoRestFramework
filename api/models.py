@@ -5,6 +5,8 @@ class User(AbstractUser):
     fio = models.CharField(max_length=255) # нужное нам поле
     gender = models.CharField(max_length=255)
 
+    REQUIRED_FIELDS = ["email"]
+
 class Product(models.Model):
     name = models.CharField(max_length=255)
     manufacturer = models.CharField(max_length=255)

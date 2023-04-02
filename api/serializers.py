@@ -3,12 +3,21 @@ from django.contrib.auth import authenticate
 from .models import Product, Cart, Order, User
 
 class UserRegisterSerializer(serializers.ModelSerializer): # ModelSerializer чтобы не писать каждый раз поля
+    # Поля для подтверждения пароля, которые не будут сохраняться в базу данных
+    password2 = serializers.CharField(style={'input_type': 'password'}, write_only=True)
+
     class Meta: # Мета класс для сериализатора
         model = User # Модель, которую мы сериализуем
-        fields = ('username', 'password') # Поля, которые мы сериализуем
+        fields = ('username', 'password', 'password2', 'fio', 'gender') # Поля, которые мы сериализуем
         extra_kwargs = {'password': {'write_only': True}}
 
+    def validate(self, data): # Метод для валидации данных
+        if data['password'] != data['password2']: # Если пароли не совпадают
+            raise serializers.ValidationError("Passwords must match") # Возвращаем ошибку
+        return data # Возвращаем данные
+    
     def create(self, validated_data): # Метод для создания пользователя
+        del validated_data['password2'] # Удаляем поле для подтверждения пароля
         user = User.objects.create_user(**validated_data) # Создаем пользователя
         return user # Возвращаем пользователя
     
