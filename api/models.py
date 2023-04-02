@@ -4,8 +4,10 @@ from django.contrib.auth.models import AbstractUser
 class User(AbstractUser):
     fio = models.CharField(max_length=255) # нужное нам поле
     gender = models.CharField(max_length=255)
+    email = models.EmailField(unique=True)
 
-    REQUIRED_FIELDS = ["email"]
+    USERNAME_FIELD = "email"
+    REQUIRED_FIELDS = ["username"]
 
 class Product(models.Model):
     name = models.CharField(max_length=255)

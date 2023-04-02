@@ -8,7 +8,7 @@ class UserRegisterSerializer(serializers.ModelSerializer): # ModelSerializer ч�
 
     class Meta: # Мета класс для сериализатора
         model = User # Модель, которую мы сериализуем
-        fields = ('username', 'password', 'password2', 'fio', 'gender') # Поля, которые мы сериализуем
+        fields = ('email', 'password', 'password2', 'fio', 'gender') # Поля, которые мы сериализуем
         extra_kwargs = {'password': {'write_only': True}}
 
     def validate(self, data): # Метод для валидации данных
@@ -18,6 +18,7 @@ class UserRegisterSerializer(serializers.ModelSerializer): # ModelSerializer ч�
     
     def create(self, validated_data): # Метод для создания пользователя
         del validated_data['password2'] # Удаляем поле для подтверждения пароля
+        validated_data['username'] = validated_data['email'] # Переименовываем поле username
         user = User.objects.create_user(**validated_data) # Создаем пользователя
         return user # Возвращаем пользователя
     
