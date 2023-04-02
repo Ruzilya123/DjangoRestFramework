@@ -1,106 +1,84 @@
-from django.http import JsonResponse
-from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth import logout
-from rest_framework import viewsets
-from rest_framework import permissions
-from rest_framework import generics
+from rest_framework.generics import ListAPIView, ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework import status
 from rest_framework.response import Response
-from .permissions import IsClient, IsGuest, IsAdmin
 from rest_framework.authtoken.models import Token
-from .models import User, Comment, Category, Actor, Genre, Film 
-from .serializers import UserRegistrSerializer, UserSerializer, UserLoginSerializer, CategorySerializer, ActorSerializer, GenreSerializer, FilmSerializer, CommentSerializer
 from rest_framework.views import APIView
 
-class RegistrUserView(generics.CreateAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserRegistrSerializer
-    permission_classes = [permissions.AllowAny]
+from .models import Product, Cart, Order, User
+from .permissions import IsAdmin, IsClient, IsGuest
+from .serializers import ProductSerializer, CartSerializer, OrderSerializer, UserRegisterSerializer, UserLoginSerializer
+from .authentication import BearerAuthentication
 
-    def post(self, request, *args, **kwargs):
-        serializer = UserRegistrSerializer(data=request.data)
-        data = {}
-        if serializer.is_valid():
-            serializer.save()
-            data['data'] = serializer.data
-            user = serializer.user
-            token = Token.objects.get(user=user).key
-            print(Token)
-            return Response({'token': token.key}, status=status.HTTP_200_OK)
+class RegisterUserView(ListCreateAPIView):
+    queryset = User.objects.all() # queryset - это то, что мы будем сериализовать, в данном случае это все пользователи
+    serializer_class = UserRegisterSerializer # Сериализатор, который мы будем использовать
+    authentication_classes = [BearerAuthentication] # Аутентификация, которую мы будем использовать
+
+    def post(self, request, *args, **kwargs): # Метод для создания пользователя
+        serializer = UserRegisterSerializer(data=request.data) # Создаем сериализатор с данными, которые мы получили
+        if serializer.is_valid(): # Если сериализатор валидный
+            user = serializer.save() # Сохраняем пользователя
+            token = Token.objects.create(user=user) # Создаем токен для пользователя
+            return Response({'token': token.key}, status=status.HTTP_200_OK) # Возвращаем токен
         else:
-            data = serializer.errors
-            return Response(data)
+            return Response(serializer.errors) # Иначе возвращаем ошибки
 
 class LoginUserView(APIView):
-    def post(self, request, *args, **kwargs):
+    def post(self, request):
         serializer = UserLoginSerializer(data=request.data)
-        if not serializer.is_valid():
-            return JsonResponse({'error': {
-                'code': 400,
-                'non_field_errors': 'Unable to log in with provided credentials'
-            }}, status=400)
-        user = serializer.validated_data
-        if user:
-            token_object, token_created = Token.objects.get_or_create(user=user)
-            token = token_object if token_object else token_created
-            return Response({'user_token': token.key}, status=status.HTTP_200_OK)
-        return Response({
-            'non_field_errors': {
-                'message': 'Unable to log in with provided credentials'
-            }
-        })
-    def get(self, request, *args, **kwargs):
-        return Response({
-            'data': {
-                'message': 'Authentification'
-            }
-        }, status=200)
-    
-class LogOutUserView(generics.ListAPIView):
-    def get(self, request, *args, **kwargs):
-        try:
-            request.user.auth_token.delete()
-        except (AttributeError, ObjectDoesNotExist):
-            return JsonResponse({
-                'error': {
-                    'code': 401,
-                    'message': 'Logout failed'
-                }
-            }, status=401)
-        logout(request)
-        return JsonResponse({
-            'data': {
-                'message': 'Logout'
-            }
-        }, status=200)
-
-class CommentsViewSet(viewsets.ModelViewSet):
-    queryset = Comment.objects.all()
-    serializer_class = CommentSerializer
-    permission_classes = [permissions.IsAuthenticated, IsClient]
-
-class FilmViewSet(viewsets.ModelViewSet):
-    queryset = Film.objects.all()
-    serializer_class = FilmSerializer
-
-    def get_permissions(self):
-        if self.action in ['update', 'destroy']:
-            permission_classes = [permissions.IsAuthenticated, IsAdmin]
+        if serializer.is_valid():
+            user = serializer.validated_data # Валидируем данные
+            token, _ = Token.objects.get_or_create(user=user) # Получаем или создаем токен для пользователя
+            return Response({'token': token.key}, status=status.HTTP_200_OK)
         else:
-            permission_classes = [permissions.IsAuthenticated, IsClient, IsGuest]
-        return [permission() for permission in permission_classes]
+            return Response(serializer.errors)
 
-class ActorViewSet(viewsets.ModelViewSet):
-    queryset = Actor.objects.all()
-    serializer_class = ActorSerializer
+class LogoutUserView(APIView):
+    permission_classes = [IsClient] # Указываем, что пользователь должен быть клиентом
+
+    def post(self, request): # Метод для выхода пользователя
+        request.user.auth_token.delete() # Удаляем токен
+        logout(request) # Выходим из системы
+        return Response(status=status.HTTP_200_OK)
+
+class ProductDetailView(RetrieveUpdateDestroyAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
     permission_classes = [IsAdmin]
 
-class GenreViewSet(viewsets.ModelViewSet):
-    queryset = Genre.objects.all()
-    serializer_class = GenreSerializer
-    permission_classes = [IsAdmin]
+class ProductListView(ListAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
 
-class CategoryViewSet(viewsets.ModelViewSet):
-    queryset = Category.objects.all()
-    serializer_class = CategorySerializer
-    permission_classes = [IsAdmin]
+    def post(self, request, *args, **kwargs): # Метод для создания товара
+        if not request.user.is_staff: # Если пользователь не является администратором
+            return Response(status=status.HTTP_403_FORBIDDEN) # Возвращаем ошибку
+
+        serializer = ProductSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class CartDetailView(RetrieveUpdateDestroyAPIView):
+    queryset = Cart.objects.all()
+    serializer_class = CartSerializer
+    permission_classes = [IsClient]
+
+class CartListView(ListCreateAPIView):
+    queryset = Cart.objects.all()
+    serializer_class = CartSerializer
+    permission_classes = [IsClient]
+
+class OrderListCreateView(ListCreateAPIView):
+    queryset = Order.objects.all()
+    serializer_class = OrderSerializer
+    permission_classes = [IsClient]
+
+class OrderDetailView(RetrieveUpdateDestroyAPIView):
+    queryset = Order.objects.all()
+    serializer_class = OrderSerializer
+    permission_classes = [IsClient]
+

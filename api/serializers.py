@@ -1,69 +1,47 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate
-from .models import User, Category, Actor, Genre, Film, Comment
+from .models import Product, Cart, Order, User
 
-class UserRegistrSerializer(serializers.Serializer):
-    password2 = serializers.CharField()
+class UserRegisterSerializer(serializers.ModelSerializer): # ModelSerializer чтобы не писать каждый раз поля
+    class Meta: # Мета класс для сериализатора
+        model = User # Модель, которую мы сериализуем
+        fields = ('username', 'password') # Поля, которые мы сериализуем
+        extra_kwargs = {'password': {'write_only': True}}
 
-    class Meta:
-        model = User
-        fields = ('id', 'email', 'username', 'password', 'password2')
-
-    def save(self):
-        user = User(
-            email=self.validated_data['email'],
-            username=self.validated_data['username']
-        )
-        password = self.validated_data['password']
-        password2 = self.validated_data['password2']
-        if password != password2:
-            raise serializers.ValidationError({'password': 'Пароли не совпадают'})
-        user.set_password(password)
-        user.save()
-
-        def __init__ (self):
-            self.user = user
-
-        return user
+    def create(self, validated_data): # Метод для создания пользователя
+        user = User.objects.create_user(**validated_data) # Создаем пользователя
+        return user # Возвращаем пользователя
     
 class UserLoginSerializer(serializers.Serializer):
-    email = serializers.EmailField()
-    password = serializers.CharField()
-    user: User = None
+    username = serializers.CharField() # Поле для ввода логина
+    password = serializers.CharField() # Поле для ввода пароля
 
-    def validate(self, data):
-        user = authenticate(**data)
-        if user:
-            return user
-        raise serializers.ValidationError("Unable to log in with provided credentials")
+    def validate(self, data): # Метод для валидации данных
+        user = authenticate(**data) # Проверяем пользователя
+        if user and user.is_active: # Если пользователь существует и активен
+            return user # Возвращаем пользователя
+        raise serializers.ValidationError("Incorrect Credentials") # Иначе возвращаем ошибку
 
-class UserSerializer(serializers.ModelSerializer):
+class ProductSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
-        fields = ('id', 'username', 'password')
+        model = Product
+        fields = '__all__' # Все поля
 
-class CategorySerializer(serializers.ModelSerializer):
+class CartSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Category
-        fields = ('id', 'name', 'description')
+        model = Cart
+        fields = '__all__'
 
-class ActorSerializer(serializers.ModelSerializer):
+class OrderSerializer(serializers.ModelSerializer):
+    total_price = serializers.IntegerField(required=False) # Поле для общей цены заказа должно быть необязательным
+
     class Meta:
-        model = Actor
-        fields = ('id', 'name', 'age', 'description', 'photo')
-
-class GenreSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Genre
-        fields = ('id', 'name', 'description')
-
-class FilmSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Film
-        fields = ('id', 'name', 'description', 'poster', 'date_out', 'country', 'actor', 'genre', 'category')
-
-class CommentSerializer(serializers.Serializer):
-    class Meta:
-        model = Comment
-        fields = ('id', 'user', 'movie', 'text')
-
+        model = Order
+        fields = '__all__'
+    
+    def save(self, **kwargs): # Метод для сохранения заказа
+        total_price = 0 # Общая цена
+        for product in self.validated_data['product']: # Проходимся по всем продуктам в заказе
+            total_price += product.price # Добавляем цену продукта к общей цене
+        self.validated_data['total_price'] = total_price # Добавляем общую цену к данным
+        super().save(**kwargs) # Сохраняем заказ

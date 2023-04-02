@@ -86,12 +86,11 @@ DATABASES = {
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
+        'api.authentication.BearerAuthentication',
     ],
 }
 
-AUTH_USER_MODEL = 'api.User'
+AUTH_USER_MODEL = 'api.User' # Подключаем модель кастомного пользователя
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
